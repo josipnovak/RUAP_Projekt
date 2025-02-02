@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "803673458643",
+    "firebase_url": "https://project-ruap-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "project-ruap",
+    "storage_bucket": "project-ruap.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:803673458643:android:ae98023098f3564e701126",
+        "android_client_info": {
+          "package_name": "hr.ferit.josipnovak.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABEd_zc_01-E1Z0hGX3An_ygSrLxIE2m8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

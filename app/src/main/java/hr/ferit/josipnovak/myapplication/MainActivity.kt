@@ -1,5 +1,6 @@
 package hr.ferit.josipnovak.myapplication
 
+import CalculateValue
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,20 +22,7 @@ class MainActivity : ComponentActivity() {
         val databaseModel = DatabaseModel()
         enableEdgeToEdge()
         setContent {
-            jojo(databaseModel)
+            NavigationController(viewModel = databaseModel)
         }
     }
-}
-
-
-@Composable
-fun jojo(
-    databaseModel: DatabaseModel
-) {
-    Text(
-        text = databaseModel.myRef.toString(),
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    )
 }

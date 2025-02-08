@@ -65,7 +65,7 @@ fun HomeScreen(
                         Text("Calculate cost of a player")
                     }
                     Button(
-                        onClick = { /* Handle featured players click */ },
+                        onClick = { navController.navigate("featured_players") },
                         modifier = Modifier.fillMaxWidth().padding(0.dp, 5.dp).height(56.dp),
                         colors = CustomButtonColors()
                     ) {

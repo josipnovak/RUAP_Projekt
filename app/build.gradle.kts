@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+    id("kotlin-parcelize")
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
+
 }
 
 android {
@@ -67,5 +70,5 @@ dependencies {
     implementation(libs.androidx.runtime)
     implementation(libs.androidx.navigation.compose.v260)
     implementation(libs.androidx.material3.v110)
-
+    implementation(libs.jetbrains.kotlinx.serialization.json)
 }

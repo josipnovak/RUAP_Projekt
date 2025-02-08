@@ -1,5 +1,8 @@
+package hr.ferit.josipnovak.myapplication.ui
+
 import android.icu.util.Calendar
 import android.os.Build
+import android.os.Bundle
 import android.widget.DatePicker
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -48,6 +51,9 @@ import android.os.Handler
 import android.os.Looper
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import hr.ferit.josipnovak.myapplication.data.PlayerData
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -500,8 +506,26 @@ fun PlayerInputForm(
                             val results = jsonResponse.getJSONObject("Results")
                             val webServiceOutput = results.getJSONArray("WebServiceOutput0")
                             val prediction = webServiceOutput.getJSONObject(0).getDouble("PricePrediction").toInt()
+                            val playerData = PlayerData(
+                                name = name,
+                                age = age,
+                                height = height,
+                                nationality = nationality,
+                                maxPrice = maxPrice,
+                                position = position,
+                                shirtNr = shirtNum,
+                                foot = foot,
+                                club = club,
+                                outfitter = outfitter,
+                                contractExpiresDays = contractExpire,
+                                joinedClubDays = contractJoined,
+                                calculatedValue = prediction
+                            )
+
+                            val playerDataJson = Json.encodeToString(playerData)
+
                             Handler(Looper.getMainLooper()).post {
-                                navController.navigate("calculated_value/$prediction")
+                                navController.navigate("calculated_value/${playerDataJson}")
                             }
                         } ?: run {
                             println("Failed to get a response")

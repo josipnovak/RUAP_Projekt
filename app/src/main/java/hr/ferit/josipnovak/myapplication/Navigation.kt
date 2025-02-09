@@ -14,6 +14,9 @@ import hr.ferit.josipnovak.myapplication.data.DatabaseModel
 import hr.ferit.josipnovak.myapplication.data.PlayerData
 import hr.ferit.josipnovak.myapplication.ui.CalculatedValue
 import hr.ferit.josipnovak.myapplication.ui.CalculateValue
+import hr.ferit.josipnovak.myapplication.ui.ChangeFeaturedPlayer
+import hr.ferit.josipnovak.myapplication.ui.ComparePlayers
+import hr.ferit.josipnovak.myapplication.ui.FeaturedPlayer
 import hr.ferit.josipnovak.myapplication.ui.FeaturedPlayers
 import hr.ferit.josipnovak.myapplication.ui.HomeScreen
 import hr.ferit.josipnovak.myapplication.ui.LandingScreen
@@ -28,7 +31,9 @@ object Paths {
     const val CALCULATED_VALUE = "calculated_value"
     const val FEATURED_PLAYERS = "featured_players"
     const val FEATURED_PLAYER = "featured_player/{playerId}"
+    const val CHANGE_FEATURED_PLAYER = "change_featured_player/{playerId}"
     const val COMPARE_PLAYERS = "compare_players"
+    const val PLAYER_SELECTION = "player_selection"
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -59,8 +64,49 @@ fun NavigationController(
             val playerData = jsonString?.let { Json.decodeFromString<PlayerData>(it) }
             playerData?.let { CalculatedValue(navController = navController, playerData = it) }
         }
-        composable(Paths.FEATURED_PLAYERS){
+        composable(Paths.FEATURED_PLAYERS) {
             FeaturedPlayers(navController = navController, viewModel = viewModel)
+        }
+
+        composable(
+            Paths.FEATURED_PLAYER,
+            arguments = listOf(
+                navArgument("playerId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { backStackEntry ->
+            val playerId = backStackEntry.arguments?.getInt("playerId")
+            playerId?.let {
+                FeaturedPlayer(
+                    navController = navController,
+                    viewModel = viewModel,
+                    playerId = it
+                )
+            }
+        }
+        composable(
+            Paths.CHANGE_FEATURED_PLAYER,
+            arguments = listOf(
+                navArgument("playerId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { backStackEntry ->
+            val playerId = backStackEntry.arguments?.getInt("playerId")
+            playerId?.let {
+                ChangeFeaturedPlayer(
+                    navController = navController,
+                    viewModel = viewModel,
+                    playerId = it
+                )
+            }
+        }
+        composable(Paths.COMPARE_PLAYERS) {
+             ComparePlayers(navController = navController, viewModel = viewModel, player1 = null, player2 = null)
+        }
+        composable(Paths.PLAYER_SELECTION) {
+            PlayerSelection(navController = navController, viewModel = viewModel, player1 = null, player2 = null)
         }
     }
 }

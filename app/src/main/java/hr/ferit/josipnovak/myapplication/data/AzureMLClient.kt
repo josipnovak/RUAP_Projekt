@@ -9,6 +9,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import kotlin.math.abs
 
 object AzureMLClient {
     private const val URL = "http://f1292e56-027b-45c5-acbd-728b1b2f081b.germanywestcentral.azurecontainer.io/score"
@@ -77,6 +78,6 @@ object AzureMLClient {
 
         val currentTime = LocalDate.now()
 
-        return ChronoUnit.DAYS.between(parsedDate, currentTime).toInt()
+        return abs(ChronoUnit.DAYS.between(currentTime, parsedDate).toInt())
     }
 }

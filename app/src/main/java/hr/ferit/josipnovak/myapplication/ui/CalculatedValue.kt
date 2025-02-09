@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -49,7 +51,7 @@ fun CalculatedValue(
             contentScale = ContentScale.Crop
         )
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
@@ -57,54 +59,61 @@ fun CalculatedValue(
                 .background(Color.Black.copy(alpha = 0.70f))
                 .padding(20.dp),
         ) {
-            Text(
-                text = "Player Information",
-                fontSize = 22.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            item {
+                Text(
+                    text = "Player Information",
+                    fontSize = 22.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+            item {
+                InfoText("Name", playerData.name.replace("+", " "))
+                InfoText("Age", playerData.age.toString())
+                InfoText("Height", playerData.height)
+                InfoText("Nationality", playerData.nationality.replace("+", " "))
+                InfoText("Max Price", playerData.maxPrice.toString().replace("+", " "))
+                InfoText("Position", playerData.position.replace("+", " "))
+                InfoText("Shirt Number", playerData.shirtNr.toString())
+                InfoText("Foot", playerData.foot.replace("+", " "))
+                InfoText("League", playerData.league.replace("+", " "))
+                InfoText("Club", playerData.club.replace("+", " "))
+                InfoText("Outfitter", playerData.outfitter.replace("+", " "))
+                InfoText("Contract Expiration", playerData.contractExpiresDays.toString())
+                InfoText("Contract Joined", playerData.joinedClubDays.toString())
+            }
+            item {
+                Spacer(modifier = Modifier.height(20.dp))
 
-            InfoText("Name", playerData.name)
-            InfoText("Age", playerData.age.toString())
-            InfoText("Height", playerData.height)
-            InfoText("Nationality", playerData.nationality)
-            InfoText("Max Price", playerData.maxPrice.toString())
-            InfoText("Position", playerData.position)
-            InfoText("Club", playerData.club)
-            InfoText("Outfitter", playerData.outfitter)
-            InfoText("Contract Expiration (Days)", playerData.contractExpiresDays.toString())
-            InfoText("Contract Joined (Days)", playerData.joinedClubDays.toString())
+                Text(
+                    text = "Calculated cost for the player",
+                    fontSize = 18.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
 
-            Spacer(modifier = Modifier.height(20.dp))
+                InfoText("Cost", playerData.calculatedValue.toString(), Color.White)
 
-            Text(
-                text = "Calculated cost for the player",
-                fontSize = 18.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            InfoText("Cost", playerData.calculatedValue.toString(), Color.White)
-
-            Spacer(modifier = Modifier.height(20.dp))
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
-            ) {
-                Button(
-                    onClick = {
-                        DatabaseModel().addNewPlayer(playerData)
-                        navController.navigate("home_screen")
-                    },
-                    modifier = Modifier
-                        .padding(top = 20.dp)
-                        .height(48.dp)
-                        .fillMaxWidth(),
-                    colors = CustomButtonColors()
+                Spacer(modifier = Modifier.height(20.dp))
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Add player to database", color = Color.White, fontSize = 18.sp)
+                    Button(
+                        onClick = {
+                            DatabaseModel().addNewPlayer(playerData)
+                            navController.navigate("home_screen")
+                        },
+                        modifier = Modifier
+                            .padding(top = 20.dp)
+                            .height(48.dp)
+                            .fillMaxWidth(),
+                        colors = CustomButtonColors()
+                    ) {
+                        Text("Add player to database", color = Color.White, fontSize = 18.sp)
+                    }
                 }
             }
         }

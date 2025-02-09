@@ -1,131 +1,142 @@
 package hr.ferit.josipnovak.myapplication.ui
 
-import android.icu.util.Calendar
 import android.os.Build
-import android.os.Bundle
-import android.widget.DatePicker
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.*
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import hr.ferit.josipnovak.myapplication.R
-import hr.ferit.josipnovak.myapplication.ui.theme.CustomButtonColors
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import hr.ferit.josipnovak.myapplication.data.leagues
-import hr.ferit.josipnovak.myapplication.data.clubs_premier_league
+import hr.ferit.josipnovak.myapplication.data.DatabaseModel
+import hr.ferit.josipnovak.myapplication.data.PlayerData
 import hr.ferit.josipnovak.myapplication.data.clubs_bundesliga
 import hr.ferit.josipnovak.myapplication.data.clubs_la_liga
 import hr.ferit.josipnovak.myapplication.data.clubs_ligue_1
+import hr.ferit.josipnovak.myapplication.data.clubs_premier_league
 import hr.ferit.josipnovak.myapplication.data.clubs_serie_a
+import hr.ferit.josipnovak.myapplication.data.leagues
 import hr.ferit.josipnovak.myapplication.data.nationalites
 import hr.ferit.josipnovak.myapplication.data.outfitters
 import hr.ferit.josipnovak.myapplication.data.positions
-import org.json.JSONObject
-import android.os.Handler
-import android.os.Looper
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.ui.text.input.KeyboardType
-import hr.ferit.josipnovak.myapplication.data.PlayerData
+import hr.ferit.josipnovak.myapplication.ui.theme.CustomButtonColors
 import hr.ferit.josipnovak.myapplication.ui.theme.CustomSelectedButtonColors
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.json.JSONObject
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun CalculateValue(
-    navController: NavController
+fun ChangeFeaturedPlayer(
+    navController: NavController,
+    viewModel: DatabaseModel,
+    playerId: Int
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.bg_2),
-            contentDescription = "Background",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-
-        Column(
+    val playerData by produceState<PlayerData?>(initialValue = null) {
+        value = viewModel.getPlayerById(playerId)
+    }
+    playerData?.let{
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 30.dp, start = 16.dp, end = 16.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .padding(bottom = 20.dp)
-                .background(Color.Black.copy(alpha = 0.60f)),
+                .background(Color.Transparent)
         ) {
-
-            Text(
-                text = "Input information about the player",
-                fontSize = 19.sp,
-                modifier = Modifier.padding(top = 20.dp, start = 16.dp),
-                color = Color.White
+            Image(
+                painter = painterResource(id = R.drawable.bg_2),
+                contentDescription = "Background",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
-            PlayerInputForm(navController = navController)
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 30.dp, start = 16.dp, end = 16.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .padding(bottom = 20.dp)
+                    .background(Color.Black.copy(alpha = 0.60f)),
+            ) {
+
+                Text(
+                    text = "Change Featured Player Information",
+                    fontSize = 19.sp,
+                    modifier = Modifier.padding(top = 20.dp, start = 16.dp),
+                    color = Color.White
+                )
+                FeaturePlayerInformationInput(navController = navController, playerData = playerData!!)
+            }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlayerInputForm(
-    navController: NavController
-) {
-    var name by remember { mutableStateOf("") }
-    var age by remember { mutableStateOf("") }
-    var height by remember { mutableStateOf("") }
-    var shirtNum by remember { mutableStateOf("") }
-    var maxPrice by remember { mutableStateOf("") }
-    var nationality by remember { mutableStateOf("") }
-    var position by remember { mutableStateOf("") }
-    var league by remember { mutableStateOf("") }
-    var club by remember { mutableStateOf("") }
-    var outfitter by remember { mutableStateOf("") }
-    var contractExpire by remember { mutableStateOf("") }
-    var contractJoined by remember { mutableStateOf("") }
-    var foot by remember { mutableStateOf("right") }
-
-    val isFormValid = name.isNotEmpty() && age.isNotEmpty() && height.isNotEmpty() && shirtNum.isNotEmpty() &&
-            maxPrice.isNotEmpty() && nationality.isNotEmpty() && position.isNotEmpty() && league.isNotEmpty() &&
-            club.isNotEmpty() && outfitter.isNotEmpty() && contractExpire.isNotEmpty() && contractJoined.isNotEmpty()
+fun FeaturePlayerInformationInput(
+    navController: NavController,
+    playerData: PlayerData
+){
+    var name by remember { mutableStateOf(playerData.name) }
+    var age by remember { mutableStateOf(playerData.age) }
+    var height by remember { mutableStateOf(playerData.height) }
+    var shirtNum by remember { mutableStateOf(playerData.shirtNr) }
+    var maxPrice by remember { mutableStateOf(playerData.maxPrice) }
+    var nationality by remember { mutableStateOf(playerData.nationality) }
+    var position by remember { mutableStateOf(playerData.position) }
+    var league by remember { mutableStateOf(playerData.league) }
+    var club by remember { mutableStateOf(playerData.club) }
+    var outfitter by remember { mutableStateOf(playerData.outfitter) }
+    var contractExpire by remember { mutableStateOf(playerData.contractExpiresDays) }
+    var contractJoined by remember { mutableStateOf(playerData.joinedClubDays) }
+    var foot by remember { mutableStateOf(playerData.foot) }
 
 
     // Create the date picker states for contract expire and join dates
@@ -756,7 +767,6 @@ fun PlayerInputForm(
                                     position = position,
                                     shirtNr = shirtNum,
                                     foot = foot,
-                                    league = league,
                                     club = club,
                                     outfitter = outfitter,
                                     contractExpiresDays = contractExpire,
@@ -791,11 +801,12 @@ fun PlayerInputForm(
                     .padding(top = 20.dp)
                     .height(48.dp)
                     .fillMaxWidth(0.8f),
-                colors = CustomButtonColors(),
-                enabled = isFormValid
+                colors = CustomButtonColors()
             ) {
                 Text("Calculate cost", color = Color.White, fontSize = 18.sp)
             }
         }
     }
 }
+
+

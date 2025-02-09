@@ -10,6 +10,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
+import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -30,6 +31,7 @@ class DatabaseModel : ViewModel() {
                 val newPlayerId = maxPlayerId + 1
 
                 val playerDataMap: Map<String, Any?> = mapOf(
+                    "id" to newPlayerId,
                     "name" to playerData.name,
                     "age" to playerData.age,
                     "height" to playerData.height,
@@ -38,6 +40,7 @@ class DatabaseModel : ViewModel() {
                     "position" to playerData.position,
                     "shirtNr" to playerData.shirtNr,
                     "foot" to playerData.foot,
+                    "league" to playerData.league,
                     "club" to playerData.club,
                     "outfitter" to playerData.outfitter,
                     "contractExpiresDays" to playerData.contractExpiresDays,
@@ -56,6 +59,7 @@ class DatabaseModel : ViewModel() {
             } else {
                 val playerRef = playersRef.child("1").child("data")
                 val playerDataMap = mapOf(
+                    "id" to 1,
                     "name" to playerData.name,
                     "age" to playerData.age,
                     "height" to playerData.height,
@@ -64,6 +68,7 @@ class DatabaseModel : ViewModel() {
                     "position" to playerData.position,
                     "shirtNr" to playerData.shirtNr,
                     "foot" to playerData.foot,
+                    "league" to playerData.league,
                     "club" to playerData.club,
                     "outfitter" to playerData.outfitter,
                     "contractExpiresDays" to playerData.contractExpiresDays,
@@ -83,7 +88,14 @@ class DatabaseModel : ViewModel() {
                     for (playerSnapshot in snapshot.children) {
                         val playerData = playerSnapshot.child("data").getValue(PlayerData::class.java)
                         if (playerData != null) {
-                            playersList.add(playerData)
+                            val sanitizedPlayerData = playerData.copy(
+                                name = playerData.name.replace("+", " "),
+                                nationality = playerData.nationality.replace("+", " "),
+                                position = playerData.position.replace("+", " "),
+                                club = playerData.club.replace("+", " "),
+                                outfitter = playerData.outfitter.replace("+", " ")
+                            )
+                            playersList.add(sanitizedPlayerData)
                         }
                     }
                     onSuccess(playersList)
@@ -97,4 +109,23 @@ class DatabaseModel : ViewModel() {
             }
         })
     }
+
+
+    suspend fun getPlayerById(playerId: Int): PlayerData? {
+        return try {
+            val snapshot = playersRef.child(playerId.toString()).child("data").get().await()
+            val playerData = snapshot.getValue(PlayerData::class.java)
+            playerData?.copy(
+                name = playerData.name.replace("+", " "),
+                nationality = playerData.nationality.replace("+", " "),
+                position = playerData.position.replace("+", " "),
+                club = playerData.club.replace("+", " "),
+                outfitter = playerData.outfitter.replace("+", " ")
+            )
+        } catch (e: Exception) {
+            Log.e("DatabaseModel", "Error getting player data", e)
+            null
+        }
+    }
+
 }

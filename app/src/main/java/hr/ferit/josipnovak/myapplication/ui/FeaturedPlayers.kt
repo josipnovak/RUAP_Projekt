@@ -46,7 +46,6 @@ fun FeaturedPlayers(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Fetch players when composable is first composed
     LaunchedEffect(Unit) {
         viewModel.getAllPlayers(
             onSuccess = { players ->
@@ -91,6 +90,7 @@ fun FeaturedPlayers(
                         .padding(vertical = 8.dp, horizontal = 16.dp)
                         .clickable {
                             println("Clicked on player: ${player.name}")
+                            navController.navigate("featured_player/${player.id}")
                         }
                         .clip(RoundedCornerShape(10.dp)),
                     shape = MaterialTheme.shapes.medium,
@@ -105,7 +105,7 @@ fun FeaturedPlayers(
                         Text(
                             text = "${player.calculatedValue} mil €",
                             style = TextStyle(
-                                color = Color.White, // White text for predicted price
+                                color = Color.White,
                                 fontSize = 16.sp
                             )
                         )
@@ -117,7 +117,7 @@ fun FeaturedPlayers(
                         Text(
                             text = player.name,
                             style = TextStyle(
-                                color = Color.White, // White text inside the card
+                                color = Color.White,
                                 fontSize = 24.sp
                             )
                         )

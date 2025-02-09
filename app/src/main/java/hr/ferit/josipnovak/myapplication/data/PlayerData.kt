@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 @Parcelize
 @Serializable
 data class PlayerData(
+    val id: Int = 0,
     val name: String = "",
     val age: String = "",
     val height: String = "",
@@ -15,6 +16,7 @@ data class PlayerData(
     val position: String = "",
     val shirtNr: String = "",
     val foot: String = "",
+    val league: String = "",
     val club: String = "",
     val outfitter: String = "",
     val contractExpiresDays: String = "",

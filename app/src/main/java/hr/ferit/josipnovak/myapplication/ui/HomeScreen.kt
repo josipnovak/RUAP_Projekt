@@ -72,7 +72,7 @@ fun HomeScreen(
                         Text("Featured Players")
                     }
                     Button(
-                        onClick = { /* Handle compare players click */ },
+                        onClick = { navController.navigate("compare_players") },
                         modifier = Modifier.fillMaxWidth().padding(0.dp, 5.dp).height(56.dp),
                         colors = CustomButtonColors()
                     ) {

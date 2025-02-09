@@ -1,14 +1,21 @@
+import android.os.Build
+import androidx.annotation.RequiresApi
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 object AzureMLClient {
-    private const val URL = "http://078e441f-025b-4fe6-a818-3c7b054f2812.germanywestcentral.azurecontainer.io/score"
-    private const val API_KEY = "1TsDTxLdChSGaxhjgTekbmL3oJGrXuhv"
+    private const val URL = "http://f1292e56-027b-45c5-acbd-728b1b2f081b.germanywestcentral.azurecontainer.io/score"
+    private const val API_KEY = "DSPxK44KEHTIWIsXt8JyH6cjMucw2jct"
     private val client = OkHttpClient()
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun sendRequest(
         callback: (String?) -> Unit,
         age: String,
@@ -20,9 +27,12 @@ object AzureMLClient {
         foot: String,
         club: String,
         outfitter: String,
-        contractExpiresDays: String,
-        joinedClubDays: String
+        contractExpires: String,
+        joinedClub: String
     ) {
+        val contractExpiresDays = convertDateToDays(contractExpires)
+        val joinedClubDays = convertDateToDays(joinedClub)
+
         val jsonBody = JSONObject().apply {
             put("Inputs", JSONObject().apply {
                 put("input1", JSONArray().put(JSONObject().apply {
@@ -35,8 +45,8 @@ object AzureMLClient {
                     put("foot", foot)
                     put("club", club)
                     put("outfitter", outfitter)
-                    put("contract_expires_days", 512)
-                    put("joined_club_days", 2773)
+                    put("contract_expires_days", contractExpiresDays)
+                    put("joined_club_days", joinedClubDays)
                 }))
             })
         }
@@ -58,5 +68,15 @@ object AzureMLClient {
                 callback(response.body?.string())
             }
         })
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun convertDateToDays(date: String): Int {
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+        val parsedDate = LocalDate.parse(date, formatter)
+
+        val currentTime = LocalDate.now()
+
+        return ChronoUnit.DAYS.between(parsedDate, currentTime).toInt()
     }
 }

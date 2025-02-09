@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -50,10 +51,19 @@ import org.json.JSONObject
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.ui.text.input.KeyboardType
 import hr.ferit.josipnovak.myapplication.data.PlayerData
+import hr.ferit.josipnovak.myapplication.ui.theme.CustomSelectedButtonColors
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -112,18 +122,64 @@ fun PlayerInputForm(
     var contractExpire by remember { mutableStateOf("") }
     var contractJoined by remember { mutableStateOf("") }
     var foot by remember { mutableStateOf("right") }
-    val context = LocalContext.current
-    val calendar = Calendar.getInstance()
 
-    val datePickerDialog = android.app.DatePickerDialog(
-        context,
-        { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            contractExpire = "$dayOfMonth/${month + 1}/$year"
-        },
-        calendar.get(Calendar.YEAR),
-        calendar.get(Calendar.MONTH),
-        calendar.get(Calendar.DAY_OF_MONTH)
-    )
+
+    // Create the date picker states for contract expire and join dates
+    val datePickerExpireState = rememberDatePickerState()
+    val datePickerJoinedState = rememberDatePickerState()
+
+    val openExpireDateDialog = remember { mutableStateOf(false) }
+    val openJoinedDateDialog = remember { mutableStateOf(false) }
+
+    // Show DatePicker Dialog for contract expiration
+    if (openExpireDateDialog.value) {
+        DatePickerDialog(
+            onDismissRequest = { openExpireDateDialog.value = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val selectedDate = datePickerExpireState.selectedDateMillis
+                    if (selectedDate != null) {
+                        val date = Instant.ofEpochMilli(selectedDate)
+                        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                        contractExpire = date.atZone(ZoneId.systemDefault()).format(formatter)
+                    }
+                    openExpireDateDialog.value = false
+                }) {
+                    Text("Confirm")
+                }
+            }
+        ) {
+            DatePicker(
+                state = datePickerExpireState,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+
+    // Show DatePicker Dialog for contract joining
+    if (openJoinedDateDialog.value) {
+        DatePickerDialog(
+            onDismissRequest = { openJoinedDateDialog.value = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val selectedDate = datePickerJoinedState.selectedDateMillis
+                    if (selectedDate != null) {
+                        val date = Instant.ofEpochMilli(selectedDate)
+                        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                        contractJoined = date.atZone(ZoneId.systemDefault()).format(formatter)
+                    }
+                    openJoinedDateDialog.value = false
+                }) {
+                    Text("Confirm")
+                }
+            }
+        ) {
+            DatePicker(
+                state = datePickerJoinedState,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
 
     var expandedNationality by remember { mutableStateOf(false) }
     var explandedPosition by remember { mutableStateOf(false) }
@@ -158,6 +214,8 @@ fun PlayerInputForm(
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.White,
                     unfocusedIndicatorColor = Color.White,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
                     cursorColor = Color.White,
                     focusedLabelColor = Color.White,
                     unfocusedLabelColor = Color.White
@@ -180,6 +238,8 @@ fun PlayerInputForm(
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.White,
                         unfocusedIndicatorColor = Color.White,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
                         cursorColor = Color.White,
                         focusedLabelColor = Color.White,
                         unfocusedLabelColor = Color.White
@@ -196,6 +256,8 @@ fun PlayerInputForm(
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.White,
                         unfocusedIndicatorColor = Color.White,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
                         cursorColor = Color.White,
                         focusedLabelColor = Color.White,
                         unfocusedLabelColor = Color.White
@@ -219,6 +281,8 @@ fun PlayerInputForm(
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.White,
                         unfocusedIndicatorColor = Color.White,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
                         cursorColor = Color.White,
                         focusedLabelColor = Color.White,
                         unfocusedLabelColor = Color.White
@@ -235,6 +299,8 @@ fun PlayerInputForm(
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.White,
                         unfocusedIndicatorColor = Color.White,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
                         cursorColor = Color.White,
                         focusedLabelColor = Color.White,
                         unfocusedLabelColor = Color.White
@@ -245,29 +311,58 @@ fun PlayerInputForm(
 
         item {
             Box {
-                Button(
-                    onClick = { expandedNationality = true },
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    colors = CustomButtonColors(),
+                if (nationality.isEmpty()) {
+                    Button(
+                        onClick = { expandedNationality = true },
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        colors = CustomButtonColors(),
 
-                    ) {
-                    Text(
-                        text = if (nationality.isEmpty()) "Select Nationality" else nationality,
-                        color = Color.White
-                    )
-                }
-                DropdownMenu(
-                    expanded = expandedNationality,
-                    onDismissRequest = { expandedNationality = false }
-                ) {
-                    nationalites.forEach { nation ->
-                        DropdownMenuItem(
-                            text = { Text(nation) },
-                            onClick = {
-                                nationality = nation
-                                expandedNationality = false
-                            }
+                        ) {
+                        Text(
+                            text = if (nationality.isEmpty()) "Select Nationality" else nationality,
+                            color = Color.White
                         )
+                    }
+                    DropdownMenu(
+                        expanded = expandedNationality,
+                        onDismissRequest = { expandedNationality = false }
+                    ) {
+                        nationalites.forEach { nation ->
+                            DropdownMenuItem(
+                                text = { Text(nation) },
+                                onClick = {
+                                    nationality = nation
+                                    expandedNationality = false
+                                }
+                            )
+                        }
+                    }
+                }
+                else{
+                    Button(
+                        onClick = { expandedNationality = true },
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        colors = CustomSelectedButtonColors(),
+
+                        ) {
+                        Text(
+                            text = if (nationality.isEmpty()) "Select Nationality" else nationality,
+                            color = Color.White
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expandedNationality,
+                        onDismissRequest = { expandedNationality = false }
+                    ) {
+                        nationalites.forEach { nation ->
+                            DropdownMenuItem(
+                                text = { Text(nation) },
+                                onClick = {
+                                    nationality = nation
+                                    expandedNationality = false
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -276,29 +371,58 @@ fun PlayerInputForm(
 
         item {
             Box {
-                Button(
-                    onClick = { explandedPosition = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CustomButtonColors(),
+                if(position.isEmpty()) {
+                    Button(
+                        onClick = { explandedPosition = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CustomButtonColors(),
 
-                    ) {
-                    Text(
-                        text = if (position.isEmpty()) "Select Position" else position,
-                        color = Color.White
-                    )
-                }
-                DropdownMenu(
-                    expanded = explandedPosition,
-                    onDismissRequest = { explandedPosition = false }
-                ) {
-                    positions.forEach { pos ->
-                        DropdownMenuItem(
-                            text = { Text(pos) },
-                            onClick = {
-                                position = pos
-                                explandedPosition = false
-                            }
+                        ) {
+                        Text(
+                            text = if (position.isEmpty()) "Select Position" else position,
+                            color = Color.White
                         )
+                    }
+                    DropdownMenu(
+                        expanded = explandedPosition,
+                        onDismissRequest = { explandedPosition = false }
+                    ) {
+                        positions.forEach { pos ->
+                            DropdownMenuItem(
+                                text = { Text(pos) },
+                                onClick = {
+                                    position = pos
+                                    explandedPosition = false
+                                }
+                            )
+                        }
+                    }
+                }
+                else{
+                    Button(
+                        onClick = { explandedPosition = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CustomSelectedButtonColors(),
+
+                        ) {
+                        Text(
+                            text = if (position.isEmpty()) "Select Position" else position,
+                            color = Color.White
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = explandedPosition,
+                        onDismissRequest = { explandedPosition = false }
+                    ) {
+                        positions.forEach { pos ->
+                            DropdownMenuItem(
+                                text = { Text(pos) },
+                                onClick = {
+                                    position = pos
+                                    explandedPosition = false
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -322,7 +446,7 @@ fun PlayerInputForm(
                         foot = "left"
                         println("Foot: $foot")
                     },
-                    colors = ButtonDefaults.buttonColors(if (foot == "left") Color.Gray else Color.LightGray)
+                    colors = ButtonDefaults.buttonColors(if (foot == "left") Color.LightGray else Color.Gray)
                 ) {
                     Text("Left")
                 }
@@ -332,7 +456,7 @@ fun PlayerInputForm(
                         foot = "right"
                         println("Foot: $foot")
                     },
-                    colors = ButtonDefaults.buttonColors(if (foot == "right") Color.Gray else Color.LightGray)
+                    colors = ButtonDefaults.buttonColors(if (foot == "right") Color.LightGray else Color.Gray)
                 ) {
                     Text("Right")
                 }
@@ -342,7 +466,7 @@ fun PlayerInputForm(
                         foot = "both"
                         println("Foot: $foot")
                     },
-                    colors = ButtonDefaults.buttonColors(if (foot == "both") Color.Gray else Color.LightGray)
+                    colors = ButtonDefaults.buttonColors(if (foot == "both") Color.LightGray else Color.Gray)
                 ) {
                     Text("Both")
                 }
@@ -351,30 +475,59 @@ fun PlayerInputForm(
 
         item {
             Box {
-                Button(
-                    onClick = { expandedLeague = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CustomButtonColors(),
+                if (league.isEmpty()) {
+                    Button(
+                        onClick = { expandedLeague = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CustomButtonColors(),
 
-                    ) {
-                    Text(
-                        text = if (league.isEmpty()) "Select League" else league,
-                        color = Color.White
-                    )
-                }
-                DropdownMenu(
-                    expanded = expandedLeague,
-                    onDismissRequest = { expandedLeague = false }
-                ) {
-                    leagues.forEach { leagueItem ->
-                        DropdownMenuItem(
-                            text = { Text(leagueItem) },
-                            onClick = {
-                                league = leagueItem
-                                club = ""
-                                expandedLeague = false
-                            }
+                        ) {
+                        Text(
+                            text = if (league.isEmpty()) "Select League" else league,
+                            color = Color.White
                         )
+                    }
+                    DropdownMenu(
+                        expanded = expandedLeague,
+                        onDismissRequest = { expandedLeague = false }
+                    ) {
+                        leagues.forEach { leagueItem ->
+                            DropdownMenuItem(
+                                text = { Text(leagueItem) },
+                                onClick = {
+                                    league = leagueItem
+                                    club = ""
+                                    expandedLeague = false
+                                }
+                            )
+                        }
+                    }
+                } else {
+                    Button(
+                        onClick = { expandedLeague = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CustomSelectedButtonColors(),
+
+                        ) {
+                        Text(
+                            text = if (league.isEmpty()) "Select League" else league,
+                            color = Color.White
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expandedLeague,
+                        onDismissRequest = { expandedLeague = false }
+                    ) {
+                        leagues.forEach { leagueItem ->
+                            DropdownMenuItem(
+                                text = { Text(leagueItem) },
+                                onClick = {
+                                    league = leagueItem
+                                    club = ""
+                                    expandedLeague = false
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -383,29 +536,58 @@ fun PlayerInputForm(
         if (league.isNotEmpty()) {
             item {
                 Box {
-                    Button(
-                        onClick = { expandedClub = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CustomButtonColors(),
+                    if(club.isEmpty()) {
+                        Button(
+                            onClick = { expandedClub = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CustomButtonColors(),
 
-                        ) {
-                        Text(
-                            text = if (club.isEmpty()) "Select Club" else club,
-                            color = Color.White
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = expandedClub,
-                        onDismissRequest = { expandedClub = false }
-                    ) {
-                        clubs.forEach { clubItem ->
-                            DropdownMenuItem(
-                                text = { Text(clubItem) },
-                                onClick = {
-                                    club = clubItem
-                                    expandedClub = false
-                                }
+                            ) {
+                            Text(
+                                text = if (club.isEmpty()) "Select Club" else club,
+                                color = Color.White
                             )
+                        }
+                        DropdownMenu(
+                            expanded = expandedClub,
+                            onDismissRequest = { expandedClub = false }
+                        ) {
+                            clubs.forEach { clubItem ->
+                                DropdownMenuItem(
+                                    text = { Text(clubItem) },
+                                    onClick = {
+                                        club = clubItem
+                                        expandedClub = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    else{
+                        Button(
+                            onClick = { expandedClub = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CustomSelectedButtonColors(),
+
+                            ) {
+                            Text(
+                                text = if (club.isEmpty()) "Select Club" else club,
+                                color = Color.White
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expandedClub,
+                            onDismissRequest = { expandedClub = false }
+                        ) {
+                            clubs.forEach { clubItem ->
+                                DropdownMenuItem(
+                                    text = { Text(clubItem) },
+                                    onClick = {
+                                        club = clubItem
+                                        expandedClub = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -429,120 +611,177 @@ fun PlayerInputForm(
 
         item {
             Box {
-                Button(
-                    onClick = { expandedOutfitters = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CustomButtonColors(),
+                if (outfitter.isEmpty()) {
+                    Button(
+                        onClick = { expandedOutfitters = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CustomButtonColors(),
 
+                        ) {
+                        Text(
+                            text = if (outfitter.isEmpty()) "Select Outfitter" else outfitter,
+                            color = Color.White
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expandedOutfitters,
+                        onDismissRequest = { expandedOutfitters = false }
                     ) {
+                        outfitters.forEach { outfit ->
+                            DropdownMenuItem(
+                                text = { Text(outfit) },
+                                onClick = {
+                                    outfitter = outfit
+                                    expandedOutfitters = false
+                                }
+                            )
+                        }
+                    }
+                }
+                else {
+                    Button(
+                        onClick = { expandedOutfitters = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CustomSelectedButtonColors(),
+
+                        ) {
+                        Text(
+                            text = if (outfitter.isEmpty()) "Select Outfitter" else outfitter,
+                            color = Color.White
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expandedOutfitters,
+                        onDismissRequest = { expandedOutfitters = false }
+                    ) {
+                        outfitters.forEach { outfit ->
+                            DropdownMenuItem(
+                                text = { Text(outfit) },
+                                onClick = {
+                                    outfitter = outfit
+                                    expandedOutfitters = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+            }
+        }
+
+        item {
+            if(contractExpire.isEmpty()) {
+                Button(
+                    onClick = {
+                        openExpireDateDialog.value = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CustomButtonColors()
+                ) {
                     Text(
-                        text = if (outfitter.isEmpty()) "Select Outfitter" else outfitter,
+                        text = if (contractExpire.isEmpty()) "Select Contract Expiry Date" else contractExpire,
                         color = Color.White
                     )
                 }
-                DropdownMenu(
-                    expanded = expandedOutfitters,
-                    onDismissRequest = { expandedOutfitters = false }
+            }
+            else{
+                Button(
+                    onClick = {
+                        openExpireDateDialog.value = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CustomSelectedButtonColors()
                 ) {
-                    outfitters.forEach { outfit ->
-                        DropdownMenuItem(
-                            text = { Text(outfit) },
-                            onClick = {
-                                outfitter = outfit
-                                expandedOutfitters = false
-                            }
-                        )
-                    }
+                    Text(
+                        text = if (contractExpire.isEmpty()) "Select Contract Expiry Date" else contractExpire,
+                        color = Color.White
+                    )
                 }
             }
         }
 
         item {
-            OutlinedTextField(
-                value = contractExpire,
-                onValueChange = { contractExpire = it },
-                label = { Text("Contract Expire Date") },
-                modifier = Modifier.fillMaxWidth().clickable {
-                    datePickerDialog.show()
-                },
-                textStyle = TextStyle(color = Color.White),
-                readOnly = true,
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.White,
-                    unfocusedIndicatorColor = Color.White,
-                    cursorColor = Color.White,
-                    focusedLabelColor = Color.White,
-                    unfocusedLabelColor = Color.White
-                )
-            )
-        }
-
-        item {
-            OutlinedTextField(
-                value = contractJoined,
-                onValueChange = { contractJoined = it },
-                label = { Text("Contract Joined Date") },
-                modifier = Modifier.fillMaxWidth().clickable{
-                    datePickerDialog.show()
-                },
-                textStyle = TextStyle(color = Color.White),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.White,
-                    unfocusedIndicatorColor = Color.White,
-                    cursorColor = Color.White,
-                    focusedLabelColor = Color.White,
-                    unfocusedLabelColor = Color.White
-                )
-            )
+            if(contractJoined.isEmpty()) {
+                Button(
+                    onClick = {
+                        openJoinedDateDialog.value = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CustomButtonColors()
+                ) {
+                    Text(
+                        text = if (contractJoined.isEmpty()) "Select Contract Joined Date" else contractJoined,
+                        color = Color.White
+                    )
+                }
+            }
+            else{
+                Button(
+                    onClick = {
+                        openJoinedDateDialog.value = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CustomSelectedButtonColors()
+                ) {
+                    Text(
+                        text = if (contractJoined.isEmpty()) "Select Contract Joined Date" else contractJoined,
+                        color = Color.White
+                    )
+                }
+            }
         }
 
         item {
             Button(
                 onClick = {
                     AzureMLClient.sendRequest(
-                    callback = { response ->
-                        response?.let {
-                            val jsonResponse = JSONObject(it)
-                            val results = jsonResponse.getJSONObject("Results")
-                            val webServiceOutput = results.getJSONArray("WebServiceOutput0")
-                            val prediction = webServiceOutput.getJSONObject(0).getDouble("PricePrediction").toInt()
-                            val playerData = PlayerData(
-                                name = name,
-                                age = age,
-                                height = height,
-                                nationality = nationality,
-                                maxPrice = maxPrice,
-                                position = position,
-                                shirtNr = shirtNum,
-                                foot = foot,
-                                club = club,
-                                outfitter = outfitter,
-                                contractExpiresDays = contractExpire,
-                                joinedClubDays = contractJoined,
-                                calculatedValue = prediction
-                            )
+                        callback = { response ->
+                            response?.let {
+                                val jsonResponse = JSONObject(it)
+                                val results = jsonResponse.getJSONObject("Results")
+                                val webServiceOutput = results.getJSONArray("WebServiceOutput0")
+                                val prediction =
+                                    webServiceOutput.getJSONObject(0).getDouble("PricePrediction")
+                                        .toInt()
+                                val playerData = PlayerData(
+                                    name = name,
+                                    age = age,
+                                    height = height,
+                                    nationality = nationality,
+                                    maxPrice = maxPrice,
+                                    position = position,
+                                    shirtNr = shirtNum,
+                                    foot = foot,
+                                    club = club,
+                                    outfitter = outfitter,
+                                    contractExpiresDays = contractExpire,
+                                    joinedClubDays = contractJoined,
+                                    calculatedValue = prediction
+                                )
 
-                            val playerDataJson = Json.encodeToString(playerData)
+                                val playerDataJson = Json.encodeToString(playerData)
+                                val encodedPlayerDataJson = URLEncoder.encode(playerDataJson, StandardCharsets.UTF_8.toString())
 
-                            Handler(Looper.getMainLooper()).post {
-                                navController.navigate("calculated_value/${playerDataJson}")
+                                Handler(Looper.getMainLooper()).post {
+                                    navController.navigate("calculated_value/${encodedPlayerDataJson}")
+                                }
+                            } ?: run {
+                                println("Failed to get a response")
                             }
-                        } ?: run {
-                            println("Failed to get a response")
-                        }
-                    },
-                    age = age,
-                    height = height.replace(",", "."),
-                    nationality = nationality,
-                    maxPrice = maxPrice,
-                    position = position,
-                    shirtNr = shirtNum,
-                    foot = foot,
-                    club = club,
-                    outfitter = outfitter,
-                    contractExpiresDays = contractExpire,
-                    joinedClubDays = contractJoined
-                )},
+                        },
+                        age = age,
+                        height = height.replace(",", "."),
+                        nationality = nationality,
+                        maxPrice = maxPrice,
+                        position = position,
+                        shirtNr = shirtNum,
+                        foot = foot,
+                        club = club,
+                        outfitter = outfitter,
+                        contractExpires = contractExpire,
+                        joinedClub = contractJoined
+                    )
+                },
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .height(48.dp)

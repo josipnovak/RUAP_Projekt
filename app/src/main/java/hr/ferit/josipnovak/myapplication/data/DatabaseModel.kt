@@ -17,38 +17,66 @@ import kotlinx.serialization.json.jsonObject
 
 class DatabaseModel : ViewModel() {
     val database = Firebase.database
-    val myRef = database.getReference("players")
+    val playersRef = database.getReference("players")
 
     fun addNewPlayer(playerData: PlayerData) {
-        val playerDataMap: Map<String, Any?> = mapOf(
-            "name" to playerData.name,
-            "age" to playerData.age,
-            "height" to playerData.height,
-            "nationality" to playerData.nationality,
-            "maxPrice" to playerData.maxPrice,
-            "position" to playerData.position,
-            "shirtNr" to playerData.shirtNr,
-            "foot" to playerData.foot,
-            "club" to playerData.club,
-            "outfitter" to playerData.outfitter,
-            "contractExpiresDays" to playerData.contractExpiresDays,
-            "joinedClubDays" to playerData.joinedClubDays,
-            "calculatedValue" to playerData.calculatedValue
-        )
 
-        val sanitizedMap = playerDataMap.mapKeys { entry ->
-            entry.key.replace(Regex("[.\\$/\\[\\]#]"), "_")
+        playersRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val playerIds = snapshot.children.map { it.key?.toInt() ?: 0 }
+
+                val maxPlayerId = playerIds.maxOrNull() ?: 0
+
+                val newPlayerId = maxPlayerId + 1
+
+                val playerDataMap: Map<String, Any?> = mapOf(
+                    "name" to playerData.name,
+                    "age" to playerData.age,
+                    "height" to playerData.height,
+                    "nationality" to playerData.nationality,
+                    "maxPrice" to playerData.maxPrice,
+                    "position" to playerData.position,
+                    "shirtNr" to playerData.shirtNr,
+                    "foot" to playerData.foot,
+                    "club" to playerData.club,
+                    "outfitter" to playerData.outfitter,
+                    "contractExpiresDays" to playerData.contractExpiresDays,
+                    "joinedClubDays" to playerData.joinedClubDays,
+                    "calculatedValue" to playerData.calculatedValue
+                )
+
+                val sanitizedMap = playerDataMap.mapKeys { entry ->
+                    entry.key.replace(Regex("[.\\$/\\[\\]#]"), "_")
+                }
+
+                val playerRef = playersRef.child(newPlayerId.toString()).child("data")
+                playerRef.setValue(sanitizedMap)
+
+                println("Player added with ID: $newPlayerId")
+            } else {
+                val playerRef = playersRef.child("1").child("data")
+                val playerDataMap = mapOf(
+                    "name" to playerData.name,
+                    "age" to playerData.age,
+                    "height" to playerData.height,
+                    "nationality" to playerData.nationality,
+                    "maxPrice" to playerData.maxPrice,
+                    "position" to playerData.position,
+                    "shirtNr" to playerData.shirtNr,
+                    "foot" to playerData.foot,
+                    "club" to playerData.club,
+                    "outfitter" to playerData.outfitter,
+                    "contractExpiresDays" to playerData.contractExpiresDays,
+                    "joinedClubDays" to playerData.joinedClubDays,
+                    "calculatedValue" to playerData.calculatedValue
+                )
+                playerRef.setValue(playerDataMap)
+            }
         }
-
-        val randomPlayerId = (1..9999).random()
-
-        val playerRef = myRef.child(randomPlayerId.toString()).child("data")
-
-        playerRef.setValue(sanitizedMap)
     }
 
     fun getAllPlayers(onSuccess: (List<PlayerData>) -> Unit, onFailure: (String) -> Unit) {
-        myRef.addValueEventListener(object : ValueEventListener {
+        playersRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val playersList = mutableListOf<PlayerData>()
                 if (snapshot.exists()) {

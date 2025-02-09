@@ -42,6 +42,12 @@ fun CustomButtonColors() = ButtonDefaults.buttonColors(
 )
 
 @Composable
+fun CustomSelectedButtonColors() = ButtonDefaults.buttonColors(
+    containerColor = DarkGray40,
+    contentColor = Color.White
+)
+
+@Composable
 fun MyApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+

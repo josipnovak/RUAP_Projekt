@@ -60,7 +60,7 @@ fun ComparePlayers(
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp,
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier.padding(top = 45.dp)
             )
 
             Column(

@@ -20,6 +20,7 @@ import hr.ferit.josipnovak.myapplication.ui.FeaturedPlayer
 import hr.ferit.josipnovak.myapplication.ui.FeaturedPlayers
 import hr.ferit.josipnovak.myapplication.ui.HomeScreen
 import hr.ferit.josipnovak.myapplication.ui.LandingScreen
+import hr.ferit.josipnovak.myapplication.ui.PlayerSelection
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.json.Json
 
@@ -32,8 +33,8 @@ object Paths {
     const val FEATURED_PLAYERS = "featured_players"
     const val FEATURED_PLAYER = "featured_player/{playerId}"
     const val CHANGE_FEATURED_PLAYER = "change_featured_player/{playerId}"
-    const val COMPARE_PLAYERS = "compare_players"
-    const val PLAYER_SELECTION = "player_selection"
+    const val COMPARE_PLAYERS = "compare_players/{player1Id}/{player2Id}"
+    const val PLAYER_SELECTION = "player_selection/{player1Id}/{player2Id}"
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -102,11 +103,29 @@ fun NavigationController(
                 )
             }
         }
-        composable(Paths.COMPARE_PLAYERS) {
-             ComparePlayers(navController = navController, viewModel = viewModel, player1 = null, player2 = null)
+        composable(
+            Paths.COMPARE_PLAYERS,
+            arguments = listOf(
+                navArgument("player1Id") { type = NavType.IntType },
+                navArgument("player2Id") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val player1Id = backStackEntry.arguments?.getInt("player1Id") ?: -1
+            val player2Id = backStackEntry.arguments?.getInt("player2Id") ?: -1
+            ComparePlayers(navController = navController, viewModel = viewModel, player1Id = player1Id, player2Id = player2Id)
         }
-        composable(Paths.PLAYER_SELECTION) {
-            PlayerSelection(navController = navController, viewModel = viewModel, player1 = null, player2 = null)
+
+        composable(
+            Paths.PLAYER_SELECTION,
+            arguments = listOf(
+                navArgument("player1Id") { type = NavType.IntType },
+                navArgument("player2Id") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val player1Id = backStackEntry.arguments?.getInt("player1Id") ?: -1
+            val player2Id = backStackEntry.arguments?.getInt("player2Id") ?: -1
+            PlayerSelection(navController = navController, viewModel = viewModel, player1Id = player1Id, player2Id = player2Id)
         }
+
     }
 }

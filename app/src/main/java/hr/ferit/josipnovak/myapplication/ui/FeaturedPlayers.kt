@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -69,58 +70,62 @@ fun FeaturedPlayers(
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 30.dp, start = 16.dp, end = 16.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .padding(bottom = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Featured Players",
-                fontSize = 19.sp,
-                modifier = Modifier.padding(top = 20.dp, start = 16.dp, bottom = 16.dp).align(
-                    Alignment.CenterHorizontally),
-                color = Color.White
-            )
+            item {
+                Text(
+                    text = "Featured Players",
+                    fontSize = 19.sp,
+                    modifier = Modifier.padding(top = 20.dp, start = 16.dp, bottom = 16.dp),
+                    color = Color.White
+                )
+            }
             playersList.forEach { player ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp, horizontal = 16.dp)
-                        .clickable {
-                            println("Clicked on player: ${player.name}")
-                            navController.navigate("featured_player/${player.id}")
-                        }
-                        .clip(RoundedCornerShape(10.dp)),
-                    shape = MaterialTheme.shapes.medium,
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.Black.copy(alpha = 0.6f),
-                        contentColor = Color.Transparent
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp, horizontal = 16.dp)
+                            .clickable {
+                                println("Clicked on player: ${player.name}")
+                                navController.navigate("featured_player/${player.id}")
+                            }
+                            .clip(RoundedCornerShape(10.dp)),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.Black.copy(alpha = 0.6f),
+                            contentColor = Color.Transparent
+                        )
                     ) {
-                        Text(
-                            text = "${player.calculatedValue} mil €",
-                            style = TextStyle(
-                                color = Color.White,
-                                fontSize = 16.sp
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(
+                                text = "${player.calculatedValue} mil €",
+                                style = TextStyle(
+                                    color = Color.White,
+                                    fontSize = 16.sp
+                                )
                             )
-                        )
-                        Divider(
-                            color = Color.White,
-                            thickness = 1.dp,
-                            modifier = Modifier.padding(vertical = 8.dp).width(60.dp)
-                        )
-                        Text(
-                            text = player.name,
-                            style = TextStyle(
+                            Divider(
                                 color = Color.White,
-                                fontSize = 24.sp
+                                thickness = 1.dp,
+                                modifier = Modifier.padding(vertical = 8.dp).width(60.dp)
                             )
-                        )
+                            Text(
+                                text = player.name,
+                                style = TextStyle(
+                                    color = Color.White,
+                                    fontSize = 24.sp
+                                )
+                            )
+                        }
                     }
                 }
             }
